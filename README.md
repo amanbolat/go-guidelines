@@ -5,18 +5,18 @@ on my own experience. A significant portion of the material below was also _borr
 these practices can be applied to other programming languages, my focus is specifically on Go.
 
 <!-- TOC -->
-
 * [Go Guidelines](#go-guidelines)
-    * [General](#general)
-        * [Avoid functions with internal state](#avoid-functions-with-internal-state)
-    * [Style](#style)
-        * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
-    * [Type system](#type-system)
-        * [Sum types](#sum-types)
-    * [Testing](#testing)
-        * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
-        * [Use containers instead of mocks](#use-containers-instead-of-mocks)
-
+  * [General](#general)
+    * [Avoid functions with internal state](#avoid-functions-with-internal-state)
+  * [Patterns](#patterns)
+    * [Avoid Functional Options](#avoid-functional-options)
+  * [Style](#style)
+    * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
+  * [Type system](#type-system)
+    * [Sum types](#sum-types)
+  * [Testing](#testing)
+    * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
+    * [Use containers instead of mocks](#use-containers-instead-of-mocks)
 <!-- TOC -->
 
 ## General
@@ -29,23 +29,23 @@ these practices can be applied to other programming languages, my focus is speci
 package user
 
 import (
-	"time"
+ "time"
 )
 
 type User struct {
-	Name      string
-	ID        uuid.UUID
-	CreatedAt time.Time
+ Name      string
+ ID        uuid.UUID
+ CreatedAt time.Time
 }
 
 type Service struct{}
 
 func (s *Service) NewUser(name string) User {
-	return User{
-		Name:      name,
-		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-	}
+ return User{
+  Name:      name,
+  ID:        uuid.New(),
+  CreatedAt: time.Now(),
+ }
 }
 ```
 
@@ -68,18 +68,18 @@ Default to simple `Config` struct that will be used as one of the parameters in 
 package server
 
 import (
-	"time"
+ "time"
 )
 
 type Config struct {
-	Addr        string
-	ConnTimeout time.Duration
+ Addr        string
+ ConnTimeout time.Duration
 }
 
 type Server struct{}
 
 func NewServer(cfg Config) (Server, error) {
-	// skipped...
+ // skipped...
 }
 ```
 
@@ -118,7 +118,7 @@ still can be achieved with a few caveats.
 package user
 
 type User interface {
-	isUser()
+ isUser()
 }
 
 type Customer struct{}
