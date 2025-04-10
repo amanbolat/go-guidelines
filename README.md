@@ -5,20 +5,17 @@ on my own experience. A significant portion of the material below was also _borr
 these practices can be applied to other programming languages, my focus is specifically on Go.
 
 <!-- TOC -->
-
 * [Go Guidelines](#go-guidelines)
-    * [General](#general)
-        * [Avoid functions with internal state](#avoid-functions-with-internal-state)
-    * [Patterns](#patterns)
-        * [Avoid Functional Options](#avoid-functional-options)
-    * [Style](#style)
-        * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
-    * [Type system](#type-system)
-        * [Sum types](#sum-types)
-    * [Testing](#testing)
-        * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
-        * [Use containers instead of mocks](#use-containers-instead-of-mocks)
-
+  * [General](#general)
+    * [Avoid functions with internal state](#avoid-functions-with-internal-state)
+  * [Patterns](#patterns)
+    * [Avoid Functional Options](#avoid-functional-options)
+    * [Sum types](#sum-types)
+  * [Style](#style)
+    * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
+  * [Testing](#testing)
+    * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
+    * [Use containers instead of mocks](#use-containers-instead-of-mocks)
 <!-- TOC -->
 
 ## General
@@ -90,28 +87,6 @@ Using a configuration struct offers better discoverability of an object's option
 eliminates the need to write `With***` methods for each additional option. While the functional options pattern is
 elegant, it shouldn't be your default choice, particularly when working on projects that aren't libraries.
 
-## Style
-
-### Last word single letter receiver name
-
-Using the last word's initial letter as a receiver name creates consistency across different interface implementations.
-This naming convention is straightforward to follow. Moreover, when you generally avoid single-letter variables in your
-code, you can instantly recognize that a single letter like 'x' represents a receiver variable.
-
-```go
-package service
-
-type PostgresStore struct{}
-
-func (s *PostgresStore) Save() {}
-
-type UserService struct{}
-
-func (s *UserService) CreateUser() {}
-```
-
-## Type system
-
 ### Sum types
 
 Go doesn't have native support for sum types (discriminated unions). However, the pattern itself is quite useful and
@@ -137,6 +112,45 @@ This example shows a `User` interface with one sealed method and two structs imp
 only structs within the `user` package can implement the method. When combined with
 a [linter](https://github.com/alecthomas/go-check-sumtype) that checks for exhaustive switch case blocks, you
 effectively get sum types in Go.
+
+### Avoid oneof struct pattern
+
+Use [sum types](#sum-types) instead. Usually oneof pattern is implemented using multiple optional fields inside a single
+struct, that acts as a value holder.
+
+```go
+package user
+
+type Value struct {
+	String  *string
+	Integer *int
+}
+```
+
+While this pattern may be frustrating due to the extra attention needed when accessing fields, there's another concern:
+any consumer of the struct can potentially assign values to multiple fields simultaneously, which would violate the 
+pattern's intended behavior. Needless to say, that in some cases it will require more boilerplate code to do the proper
+validation of the struct and `switch-casing`.
+
+## Style
+
+### Last word single letter receiver name
+
+Using the last word's initial letter as a receiver name creates consistency across different interface implementations.
+This naming convention is straightforward to follow. Moreover, when you generally avoid single-letter variables in your
+code, you can instantly recognize that a single letter like 'x' represents a receiver variable.
+
+```go
+package service
+
+type PostgresStore struct{}
+
+func (s *PostgresStore) Save() {}
+
+type UserService struct{}
+
+func (s *UserService) CreateUser() {}
+```
 
 ## Testing
 
