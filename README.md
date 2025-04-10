@@ -65,7 +65,7 @@ the [jonboulle/clockwork](https://github.com/jonboulle/clockwork) package.
 
 ### Avoid Functional Options
 
-Default to simple `Config` struct that will be used as one of the parameters in your constructor.
+Default to using a simple Config struct as one of the parameters in your constructor.
 
 ```go
 package server
