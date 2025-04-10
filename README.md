@@ -5,16 +5,18 @@ on my own experience. A significant portion of the material below was also _borr
 these practices can be applied to other programming languages, my focus is specifically on Go.
 
 <!-- TOC -->
+
 * [Go Guidelines](#go-guidelines)
-  * [General](#general)
-    * [Avoid functions with internal state](#avoid-functions-with-internal-state)
-  * [Style](#style)
-    * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
-  * [Type system](#type-system)
-    * [Sum types](#sum-types)
-  * [Testing](#testing)
-    * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
-    * [Use containers instead of mocks](#use-containers-instead-of-mocks)
+    * [General](#general)
+        * [Avoid functions with internal state](#avoid-functions-with-internal-state)
+    * [Style](#style)
+        * [Last word single letter receiver name](#last-word-single-letter-receiver-name)
+    * [Type system](#type-system)
+        * [Sum types](#sum-types)
+    * [Testing](#testing)
+        * [Test with `GOMAXPROCS` set to 1](#test-with-gomaxprocs-set-to-1)
+        * [Use containers instead of mocks](#use-containers-instead-of-mocks)
+
 <!-- TOC -->
 
 ## General
@@ -27,23 +29,23 @@ these practices can be applied to other programming languages, my focus is speci
 package user
 
 import (
-  "time"
+	"time"
 )
 
 type User struct {
-  Name      string
-  ID        uuid.UUID
-  CreatedAt time.Time
+	Name      string
+	ID        uuid.UUID
+	CreatedAt time.Time
 }
 
 type Service struct{}
 
 func (s *Service) NewUser(name string) User {
-  return User{
-    Name:      name,
-    ID:        uuid.New(),
-    CreatedAt: time.Now(),
-  }
+	return User{
+		Name:      name,
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+	}
 }
 ```
 
@@ -55,6 +57,35 @@ The [gofrs/uuid](https://github.com/gofrs/uuid) package offers
 the [Gen](https://pkg.go.dev/github.com/gofrs/uuid/v5#Gen) struct, which allows you to create a deterministic UUID
 generator. For generating `time.Time` values, you can use
 the [jonboulle/clockwork](https://github.com/jonboulle/clockwork) package.
+
+## Patterns
+
+### Avoid Functional Options
+
+Default to simple `Config` struct that will be used as one of the parameters in your constructor.
+
+```go
+package server
+
+import (
+	"time"
+)
+
+type Config struct {
+	Addr        string
+	ConnTimeout time.Duration
+}
+
+type Server struct{}
+
+func NewServer(cfg Config) (Server, error) {
+	// skipped...
+}
+```
+
+Using a configuration struct offers better discoverability of an object's options during creation. This approach
+eliminates the need to write `With***` methods for each additional option. While the functional options pattern is
+elegant, it shouldn't be your default choice, particularly when working on projects that aren't libraries.
 
 ## Style
 
@@ -87,7 +118,7 @@ still can be achieved with a few caveats.
 package user
 
 type User interface {
- isUser()
+	isUser()
 }
 
 type Customer struct{}
@@ -114,7 +145,8 @@ than one CPU core to execute tests. As a result, certain operations you expect t
 actually execute later than anticipated, leading to unexpected behavior and test failures.
 
 As a workaround, you can set `GOMAXPROCS` to `1` to help identify which assertions are failing in the test. Once you've
-pinpointed the issue, consider using `assert.Eventually` from the [testify/assert](https://github.com/stretchr/testify/assert)
+pinpointed the issue, consider using `assert.Eventually` from
+the [testify/assert](https://github.com/stretchr/testify/assert)
 package. This function allows you to check conditions over an extended period rather than expecting immediate results,
 which is particularly useful for asynchronous operations.
 
